@@ -24,6 +24,17 @@ class App extends Component {
 
   componentDidMount = async () => {
     window.web3 = new Web3(fortmatic.getProvider());
+    let isUserLoggedIn = await fortmatic.user.isLoggedIn();
+    if (isUserLoggedIn) {
+      window.web3.eth.getAccounts((error, accounts) => {
+        this.setState({
+          account: accounts[0]
+        });
+      });
+    }
+    this.setState({
+      isLoggedIn: isUserLoggedIn
+    });
   };
 
   componentDidUpdate = async (prevProps, prevState) => {
@@ -72,8 +83,8 @@ class App extends Component {
     return (
       <div>
         <div className="container text-center mt-4">
-          <h2 className="heading">Classroom Attendance Recorder</h2>
-          {this.state.isLoggedIn && <Profile />}
+          <h2 className="heading">Identity Manager</h2>
+          {this.state.isLoggedIn && <Profile account={this.state.account} />}
 
           {!this.state.isLoggedIn && (
             <a
