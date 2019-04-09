@@ -2,7 +2,9 @@ import React, { Component } from "react";
 import Fortmatic from "fortmatic";
 import Web3 from "web3";
 
-import Vote from "./Vote";
+import Toast from "./Toast";
+
+import Profile from "./Profile";
 
 const fortmatic = new Fortmatic("pk_test_B395AD580D9ADEA6");
 
@@ -11,7 +13,10 @@ class App extends Component {
     super(props);
     this.state = {
       isLoggedIn: false,
-      account: ""
+      account: "",
+      showToast: false,
+      level: "success",
+      message: ""
     };
     this.login = this.login.bind(this);
     this.logout = this.logout.bind(this);
@@ -22,11 +27,22 @@ class App extends Component {
   };
 
   componentDidUpdate = async (prevProps, prevState) => {
-    console.log(prevProps, prevState);
     let isUserLoggedIn = await fortmatic.user.isLoggedIn();
     this.setState({
       isLoggedIn: isUserLoggedIn
     });
+  };
+
+  showToast = e => {
+    e.preventDefault();
+    this.setState(
+      {
+        showToast: true
+      },
+      () => {
+        setTimeout(() => this.setState({ showToast: false }), 3000);
+      }
+    );
   };
 
   login = async () => {
@@ -37,7 +53,14 @@ class App extends Component {
           account
         });
       })
-      .catch(err => console.log("Fortmatic Error ", err));
+      .catch(err => {
+        console.log("Fortmatic Error ", err);
+        this.setState({
+          showToast: true,
+          message: err.message,
+          level: "danger"
+        });
+      });
   };
 
   logout = async () => {
@@ -47,30 +70,37 @@ class App extends Component {
 
   render() {
     return (
-      <div className="container text-center mt-4">
-        <h2 className="heading">Classroom Attendance Recorder</h2>
-        {this.state.isLoggedIn && <Vote />}
+      <div>
+        <div className="container text-center mt-4">
+          <h2 className="heading">Classroom Attendance Recorder</h2>
+          {this.state.isLoggedIn && <Profile />}
 
-        {!this.state.isLoggedIn && (
-          <a
-            title="Sign In"
-            onClick={() => this.login()}
-            href="#"
-            className="floating-button"
-          >
-            <i className="fa fa-lock fa-2x" />
-          </a>
-        )}
-        {this.state.isLoggedIn && (
-          <a
-            title="Sign Out"
-            onClick={() => this.logout()}
-            href="#"
-            className="floating-button"
-          >
-            <i className="fa fa-unlock fa-2x" />
-          </a>
-        )}
+          {!this.state.isLoggedIn && (
+            <a
+              title="Sign In"
+              onClick={() => this.login()}
+              href="#"
+              className="floating-button"
+            >
+              <i className="fa fa-lock fa-2x" />
+            </a>
+          )}
+          {this.state.isLoggedIn && (
+            <a
+              title="Sign Out"
+              onClick={() => this.logout()}
+              href="#"
+              className="floating-button"
+            >
+              <i className="fa fa-unlock fa-2x" />
+            </a>
+          )}
+        </div>
+        <Toast
+          level={this.state.level}
+          message={this.state.message}
+          visible={this.state.showToast}
+        />
       </div>
     );
   }
